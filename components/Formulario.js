@@ -1,8 +1,14 @@
 import React, {useState} from 'react';
-import {Text, StyleSheet, View, TextInput, Button} from 'react-native';
+import {Text, StyleSheet, View, TextInput, Button,TouchableHighlight, Alert, ScrollView} from 'react-native';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import Shortid from "shortid";
+import shortid from 'shortid';
 
-const Formulario = () => {
+const Formulario = ({citas, setCitas, guardarMostrarForm, guardarCitasStorage}) => {
+    const [paciente, guardarPaciente] = useState('');
+    const [propietario, guardarPropietario] = useState('');
+    const [telefono, guardarTelefono] = useState('');
+    const [sintoma, guardarSintoma] = useState('');
     const [fecha, guardarFecha] = useState('');
     const [hora, guardarHora] = useState('');
 
@@ -18,12 +24,9 @@ const Formulario = () => {
     };
 
     const confirmarFecha = (date) => {
-        const opciones = {year:'numeric', month:'long', day: '2-digit'};
-        console.log(opciones);
+        const opciones = {year:'numeric', month:'long', day:'2-digit'};
         guardarFecha(date.toLocaleDateString('es-ES', opciones));
         hideDatePicker();
-        console.warn("A date has been picked: ", date);
-        
     };
 
     // M uestra u oculta el timepicker
@@ -36,33 +39,81 @@ const Formulario = () => {
         setTimePickerVisibility(false);
     };
 
-    const confirmarHora = (date) => {
-        console.warn("A date has been picked: ", date);
+    const confirmarHora = hora => {
+        const opciones = { hour: 'numeric', minute: '2-digit'};
+        guardarHora(hora.toLocaleString('en-US', opciones));
         hideTimePicker();
     };
+
+    const crearNuevaCita = () => {
+        if( paciente.trim() === '' || 
+            propietario.trim() === '' || 
+            telefono.trim() === '' || 
+            fecha.trim() === '' || 
+            hora.trim() === '' || 
+            sintoma.trim() === ''){
+                mostrarAlerta();
+                return;
+        }
+        const cita = { paciente, propietario, telefono, fecha, hora, sintoma };
+        cita.id = shortid.generate();
+        // Agregar al state
+        const citasNuevo = [...citas, cita];
+        setCitas(citasNuevo);
+
+        // Pasar las nuevas citas a storage
+        guardarCitasStorage(JSON.stringify(citasNuevo));
+
+        // Ocultar el formulario
+        guardarMostrarForm(false);
+        
+        // Resetear el formulario
+
+        guardarSintoma('');
+        guardarPropietario('');
+        guardarPaciente('');
+        guardarHora('');
+        guardarFecha('');
+        guardarTelefono('');
+    }
+
+
+
+    const mostrarAlerta = () => {
+        Alert.alert(
+            'Error', // Título
+            'Todos los campos son obligatorios', // Mensaje
+            [{
+                text: 'OK' // Arreglo de botones
+            }]
+        );
+    }
     return (
         <>
-        <View style={ styles.formulario }>
+        <ScrollView style={ styles.formulario }>
             <View>
                 <Text>Paciente</Text>
                 <TextInput style={styles.input}
-                onChangeText={(texto) => console.log(texto)}
+                onChangeText={texto => guardarPaciente(texto)}
                 />
+                <Text>{paciente}</Text>
             </View>
 
             <View>
                 <Text>Dueño</Text>
                 <TextInput style={styles.input}
-                onChangeText={(texto) => console.log(texto)}
+                onChangeText={texto => guardarPropietario(texto)}
                 />
+                <Text>{propietario}</Text>
             </View>
 
             <View>
                 <Text>Teléfono Contacto</Text>
                 <TextInput style={styles.input}
-                onChangeText={(texto) => console.log(texto)}
+                onChangeText={texto => guardarTelefono(texto)}
                 keyboardType='numeric'
                 />
+                <Text>{telefono}</Text>
             </View>
             <View>
                 <Text style={styles.label}>Fecha</Text>
@@ -100,11 +151,17 @@ const Formulario = () => {
                 <Text>Sitomas</Text>
                 <TextInput style={styles.input}
                 multiline
-                onChangeText={(texto) => console.log(texto)}
+                onChangeText={texto => guardarSintoma(texto)}
                 />
+                <Text>{sintoma}</Text>
             </View>
             
-        </View>
+            <View>
+                <TouchableHighlight onPress={() => crearNuevaCita()} style={styles.btnSubmit}>
+                    <Text style={styles.textoSubmit}>Crear Nueva Cita</Text>
+                </TouchableHighlight>
+            </View>
+        </ScrollView>
         </>
     )
 }
@@ -127,6 +184,16 @@ const styles = StyleSheet.create({
         borderColor: '#e1e1e1',
         borderWidth: 1,
         borderStyle: 'solid'
+    },
+    btnSubmit: {
+        padding: 10,
+        backgroundColor: '#7d024e',
+        marginVertical: 10
+    },
+    textoSubmit: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        textAlign: 'center'
     }
 })
 

@@ -21,11 +21,13 @@ const Cita = ({cita, eliminarPaciente}) => {
             </View>
             <View>
                 <Text style={styles.label}>Sintomas: </Text>
-                <Text>{cita.sintomas}</Text>
+                <Text>{cita.sintoma}</Text>
             </View>
-            <TouchableHighlight onPress={()=>dialogoEliminar(cita.id)} style={styles.btnEliminar}>
-                <Text style={styles.textoEliminar}>Eliminar &times;</Text>
-            </TouchableHighlight>
+            <View>
+                <TouchableHighlight onPress={()=>dialogoEliminar(cita.id)} style={styles.btnEliminar}>
+                    <Text style={styles.textoEliminar}>Eliminar &times;</Text>
+                </TouchableHighlight>
+            </View>
         </View>
     )
 }
